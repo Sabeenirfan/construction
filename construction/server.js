@@ -3,12 +3,14 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const fs = require("fs");
 require("dotenv").config(); // For environment variables
+const path = require("path");
 
 const app = express();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(__dirname)));
 
 // MongoDB Connection
 const MONGODB_URI =
@@ -46,6 +48,10 @@ const supplierSchema = new mongoose.Schema({
 });
 
 const Supplier = mongoose.model("Supplier", supplierSchema);
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
 
 // Project Routes
 app.get("/projects", async (req, res) => {
