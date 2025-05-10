@@ -15,7 +15,7 @@ app.use(express.static(path.join(__dirname)));
 // MongoDB Connection
 const MONGODB_URI =
   process.env.MONGODB_URI ||
-  "mongodb+srv://irfansabeen732:pnelope123@cluster0.7fvrp.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+  "mongodb+srv://irfansabeen732:pnelope123@cluster0.7fvrp.mongodb.net/test?retryWrites=true&w=majority&appName=Cluster0";
 
 mongoose
   .connect(MONGODB_URI)
@@ -54,16 +54,17 @@ app.get("/", (req, res) => {
 });
 
 // Project Routes
-app.get("/projects", async (req, res) => {
+app.get("/api/projects", async (req, res) => {
   try {
     const projects = await Project.find().sort({ createdAt: -1 });
     res.json(projects);
   } catch (error) {
+    console.error("Error fetching projects:", error);
     res.status(500).json({ message: error.message });
   }
 });
 
-app.post("/projects", async (req, res) => {
+app.post("/api/projects", async (req, res) => {
   try {
     const project = new Project(req.body);
     const newProject = await project.save();
@@ -73,7 +74,7 @@ app.post("/projects", async (req, res) => {
   }
 });
 
-app.put("/projects/:id", async (req, res) => {
+app.put("/api/projects/:id", async (req, res) => {
   try {
     const project = await Project.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
@@ -85,7 +86,7 @@ app.put("/projects/:id", async (req, res) => {
   }
 });
 
-app.delete("/projects/:id", async (req, res) => {
+app.delete("/api/projects/:id", async (req, res) => {
   try {
     const result = await Project.findByIdAndDelete(req.params.id);
     if (!result) return res.status(404).json({ message: "Project not found" });
@@ -96,7 +97,7 @@ app.delete("/projects/:id", async (req, res) => {
 });
 
 // Supplier Routes
-app.get("/suppliers", async (req, res) => {
+app.get("/api/suppliers", async (req, res) => {
   try {
     const suppliers = await Supplier.find().sort({ createdAt: -1 });
     res.json(suppliers);
@@ -105,7 +106,7 @@ app.get("/suppliers", async (req, res) => {
   }
 });
 
-app.post("/suppliers", async (req, res) => {
+app.post("/api/suppliers", async (req, res) => {
   try {
     const supplier = new Supplier(req.body);
     const newSupplier = await supplier.save();
@@ -115,7 +116,7 @@ app.post("/suppliers", async (req, res) => {
   }
 });
 
-app.put("/suppliers/:id", async (req, res) => {
+app.put("/api/suppliers/:id", async (req, res) => {
   try {
     const supplier = await Supplier.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
@@ -128,7 +129,7 @@ app.put("/suppliers/:id", async (req, res) => {
   }
 });
 
-app.delete("/suppliers/:id", async (req, res) => {
+app.delete("/api/suppliers/:id", async (req, res) => {
   try {
     const result = await Supplier.findByIdAndDelete(req.params.id);
     if (!result) return res.status(404).json({ message: "Supplier not found" });
@@ -141,13 +142,20 @@ app.delete("/suppliers/:id", async (req, res) => {
 // JSON Data Import Function
 const importJSONData = async () => {
   try {
-    const suppliersData = JSON.parse(fs.readFileSync("suppliers.json", "utf8"));
-    await Supplier.insertMany(suppliersData, { ordered: false });
-    console.log("Suppliers data inserted successfully");
+    // Check if files exist before trying to read them
+    if (fs.existsSync("suppliers.json")) {
+      const suppliersData = JSON.parse(
+        fs.readFileSync("suppliers.json", "utf8")
+      );
+      await Supplier.insertMany(suppliersData, { ordered: false });
+      console.log("Suppliers data inserted successfully");
+    }
 
-    const projectsData = JSON.parse(fs.readFileSync("projects.json", "utf8"));
-    await Project.insertMany(projectsData, { ordered: false });
-    console.log("Projects data inserted successfully");
+    if (fs.existsSync("projects.json")) {
+      const projectsData = JSON.parse(fs.readFileSync("projects.json", "utf8"));
+      await Project.insertMany(projectsData, { ordered: false });
+      console.log("Projects data inserted successfully");
+    }
   } catch (error) {
     console.error("Error inserting JSON data:", error);
   }
@@ -161,9 +169,9 @@ app.use((err, req, res, next) => {
 
 // Start server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, async () => {
-  console.log(`Server is running on port ${PORT}`);
+app.listen(PORT, () => {
+  console.log(`Server started on port ${PORT}`);
 
   // Uncomment this if you want to import JSON data when the server starts
-  // await importJSONData();
+  // importJSONData();
 });
