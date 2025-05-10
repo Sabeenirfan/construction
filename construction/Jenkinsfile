@@ -7,7 +7,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git credentialsId: 'github-credentials', url: "${GITHUB_URL}", branch: 'main'
+                 git credentialsId: 'GitHub-PAT', url: 'https://github.com/Sabeenirfan/construction.git', branch: 'main'
             }
         }
         stage('Build') {
