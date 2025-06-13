@@ -128,4 +128,5 @@ def test_page_title(browser):
     assert "Construction Management System" in browser.title
     print("Triggering test")
     print("Triggering test")
+    print("Triggering test")
     
