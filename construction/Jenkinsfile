@@ -1,39 +1,29 @@
 pipeline {
-    agent any
-    environment {
-        PROJECT_NAME = 'construction' // Replace with your project name
-        GITHUB_URL = 'https://github.com/Sabeenirfan/construction.git' // Replace with your GitHub repository URL
+    agent {
+        docker {
+            image 'python:3.12'
+        }
     }
+
     stages {
-        stage('Checkout') {
+        stage('Clone') {
             steps {
-                 git credentialsId: 'GitHub-PAT', url: 'https://github.com/Sabeenirfan/construction.git', branch: 'main'
+                git 'https://github.com/Sabeenirfan/construction.git'
             }
         }
-        stage('Build') {
+
+        stage('Install dependencies') {
             steps {
-                script {
-                    sh 'docker-compose -p ${PROJECT_NAME} -f docker-compose.yml up -d'
-                }
+                sh 'apt-get update'
+                sh 'apt-get install -y chromium-driver'
+                sh 'pip install -r requirements.txt'
             }
         }
-        stage('Test') {
+
+        stage('Run Tests') {
             steps {
-                echo 'Testing the application...'
+                sh 'pytest --maxfail=1 --disable-warnings'
             }
-        }
-        stage('Deploy') {
-            steps {
-                echo 'Deploying the application...'
-            }
-        }
-    }
-    post {
-        success {
-            echo 'Build completed successfully.'
-        }
-        failure {
-            echo 'Build failed.'
         }
     }
 }
