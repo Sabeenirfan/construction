@@ -126,3 +126,4 @@ def test_supplier_phone_no_validation(browser):
 def test_page_title(browser):
     browser.get(BASE_URL)
     assert "Construction Management System" in browser.title
+    print("Triggering test")
