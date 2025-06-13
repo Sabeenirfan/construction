@@ -15,7 +15,7 @@ BASE_URL = "http://3.144.254.243:3002"
 
 @pytest.fixture
 def browser():
-   options = webdriver.ChromeOptions()
+    options = webdriver.ChromeOptions()
     options.add_argument("--headless")  # remove if you want to see browser
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
