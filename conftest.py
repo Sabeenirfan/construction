@@ -1,6 +1,7 @@
 import pytest
 import tempfile
 import uuid
+import shutil
 from selenium import webdriver
 
 @pytest.fixture
@@ -13,7 +14,7 @@ def browser():
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
     
-    # Create unique user data directory - THIS IS THE KEY FIX
+    # Create unique user data directory
     unique_id = str(uuid.uuid4())
     temp_dir = f"/tmp/chrome-user-data-{unique_id}"
     options.add_argument(f"--user-data-dir={temp_dir}")
@@ -27,4 +28,8 @@ def browser():
     yield driver
     driver.quit()
 
-# Your existing test functions go here...
+    # Cleanup temp dir
+    try:
+        shutil.rmtree(temp_dir)
+    except Exception as e:
+        print(f"[WARN] Failed to delete temp Chrome dir: {e}")
