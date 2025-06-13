@@ -6,17 +6,34 @@ from selenium.webdriver.common.by import By
 
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+import tempfile
+import shutil
+
 
 
 BASE_URL = "http://3.144.254.243:3002"
 
 @pytest.fixture
 def browser():
-    options = webdriver.ChromeOptions()
+   options = webdriver.ChromeOptions()
     options.add_argument("--headless")  # remove if you want to see browser
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    
+    # ✅ Use a unique, isolated user-data-dir per session
+    user_data_dir = tempfile.mkdtemp()
+    options.add_argument(f"--user-data-dir={user_data_dir}")
+
     driver = webdriver.Chrome(options=options)
     yield driver
     driver.quit()
+
+    # Clean up the temporary profile directory
+    try:
+        import shutil
+        shutil.rmtree(user_data_dir)
+    except Exception as e:
+        print(f"Warning: Failed to delete temp user-data-dir: {e}")
 
 def open_projects_tab(browser):
     browser.find_element(By.XPATH, "//button[contains(text(),'Projects')]").click()
