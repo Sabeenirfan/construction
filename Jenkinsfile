@@ -2,32 +2,25 @@ pipeline {
     agent any
 
     stages {
-        stage('Run in Docker') {
-            agent {
-                docker {
-                    image 'python:3.12'
-                }
+        stage('Clone') {
+            steps {
+                git 'https://github.com/Sabeenirfan/construction.git'
             }
-            stages {
-                stage('Clone') {
-                    steps {
-                        git 'https://github.com/Sabeenirfan/construction.git'
-                    }
-                }
+        }
 
-                stage('Install dependencies') {
-                    steps {
-                        sh 'apt-get update'
-                        sh 'apt-get install -y chromium-driver'
-                        sh 'pip install -r requirement.txt'
-                    }
-                }
-
-                stage('Run Tests') {
-                    steps {
-                        sh 'pytest --maxfail=1 --disable-warnings'
-                    }
-                }
+        stage('Test Inside Docker') {
+            steps {
+                sh '''
+                    docker run --rm \
+                        -v $PWD:/app \
+                        -w /app \
+                        python:3.12 bash -c "
+                            apt-get update && \
+                            apt-get install -y chromium-driver && \
+                            pip install -r requirement.txt && \
+                            pytest --maxfail=1 --disable-warnings
+                        "
+                '''
             }
         }
     }
