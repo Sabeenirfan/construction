@@ -1,30 +1,41 @@
 pipeline {
     agent any
     stages {
-        stage('Clone') {
+        stage('Clone Repositories') {
             steps {
-                git branch: 'main', url: 'https://github.com/Sabeenirfan/construction.git'
+                // Clone application code
+                dir('app') {
+                    git branch: 'main', url: 'https://github.com/Sabeenirfan/construction.git'
+                }
+                // Clone test code
+                dir('tests') {
+                    git branch: 'main', url: 'https://github.com/Sabeenirfan/construction1.git'
+                }
             }
         }
-        stage('Test Inside Docker') {
+
+        stage('Run Tests Inside Docker') {
             steps {
-                sh '''
-                    docker run --rm \
-                        -v $PWD:/app \
-                        -w /app \
-                        python:3.12 bash -c "
-                            apt-get update && \
-                            apt-get install -y chromium chromium-driver && \
-                            pip install -r requirement.txt && \
-                            pytest --maxfail=1 --disable-warnings -v
-                        "
-                '''
+                dir('tests') {
+                    sh '''
+                        docker run --rm \
+                            -v $PWD:/tests \
+                            -v $WORKSPACE/app:/app \
+                            -w /tests \
+                            python:3.12 bash -c "
+                                apt-get update && \
+                                apt-get install -y chromium chromium-driver && \
+                                pip install -r requirement.txt && \
+                                pytest --maxfail=1 --disable-warnings -v
+                            "
+                    '''
+                }
             }
         }
     }
+
     post {
         always {
-            // Clean up any dangling containers
             sh 'docker system prune -f || true'
         }
         failure {
