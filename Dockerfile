@@ -2,6 +2,8 @@
 FROM python:3.12-slim
 
 # Install Chrome & dependencies
+
+# Install Chrome & dependencies
 RUN apt-get update && apt-get install -y \
     wget \
     gnupg \
